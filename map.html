@@ -13,21 +13,37 @@
      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
      crossorigin=""></script>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet-search@3.0.10/dist/leaflet-search.min.css">
-
-<script src="https://unpkg.com/leaflet-search@3.0.10/dist/leaflet-search.min.js"></script>
-          
-
 <!-- Load GeoJSON File -->
 
 <script src="fc_map_data.js"></script>
 
 <!-- Add a CSS snippet to set the dimensions of the map area -->
 <style>
-#map_div { 
-    height: 500px;
-    width: 1000px;
-}
+#map_div {
+            position: relative;
+            height: 500px;
+            width: 1000px;
+        }
+
+        #map-search-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+        }
+
+        #custom-search-input {
+            margin-right: 5px;
+        }
+
+        #search-button {
+            margin-left: 5px;
+        }
+
+        #search-hits {
+            margin-top: 5px;
+            font-weight: bold;
+        }
 .info {
     padding: 6px 8px;
     font: 14px/16px Arial, Helvetica, sans-serif;
@@ -61,7 +77,16 @@
 <h1>Forbidden City Map in Leaflet</h1>
 
 <!-- Add a div container for the map in the body of the HTML -->
-<div id="map_div"></div>
+<div id="map_div">
+    <!-- Add search input -->
+    <div id="map-search-container">
+        <input type="text" id="custom-search-input" placeholder="Search">
+        <button id="search-button">Search</button>
+        <div id="search-hits"></div>
+    </div>
+</div>
+
+
 
 <!-- Insert a JavaScript snippet and create a map -->
 <script>
@@ -138,39 +163,95 @@ var points = L.geoJSON(markers, {
     onEachFeature:createPopup
 }).addTo(mymap);
 
-// Add the search control
-var searchControl = new L.Control.Search({
-  layer: points, // The layer to search
-  propertyName: ['jades', 'palace_name', '宮殿名稱'], // Properties to search in GeoJSON
-  initial: true, // Whether the search box should be open by default
-  zoom: 15, // The zoom level when a result is selected
-});
+// Create a variable to store the marker for the search result
+var searchMarker = null;
 
-searchControl.on('search:locationfound', function(e) {
-  var feature = e.layer.feature;
-  if (feature) {
-    // Display popup for the found location
-    var palaceName = feature.properties["palace_name"];
-    var jades = feature.properties["jades"];
-    var chineseName = feature.properties["宮殿名稱"];
+// Function to clear the previous search marker
+function clearSearchMarker() {
+    if (searchMarker) {
+        mymap.removeLayer(searchMarker);
+    }
+}
 
-    var popupText =
-      "<b>Palace Name:</b> " + palaceName + "<br>" +
-      "<b>Jade Inventory:</b> " + jades + "<br>" +
-      "<b>宮殿名稱:</b> " + chineseName;
+document.getElementById("search-button").addEventListener("click", function () {
+    // Get the search query from the input field
+    var query = document.getElementById("custom-search-input").value.toLowerCase();
+    
+    // Iterate through GeoJSON features
+    points.eachLayer(function (layer) {
+        // Check if any of the desired properties contain the query
+        if (
+            query === "" || // Show all features when the query is empty
+            layer.feature.properties.palace_name.toLowerCase().includes(query) ||
+            layer.feature.properties.jades.toLowerCase().includes(query) ||
+            layer.feature.properties.宮殿名稱.toLowerCase().includes(query)
+        ) {
+            // Show the matching feature
+            layer.addTo(mymap);
 
-    e.layer.bindPopup(popupText).openPopup();
-  } else {
-    // Handle the case where the location is not found
-    alert("Location not found.");
-  }
-}).on('search:collapsed', function(e) {
-  // Clear any highlighted results when the search box is collapsed
-  points.resetStyle(e.layer);
+            // Add a marker at the location of the search result
+            var latlng = layer.getLatLng();
+            searchMarker = L.marker(latlng).addTo(mymap);
+        } else {
+            // Hide non-matching features
+            mymap.removeLayer(layer);
+        }
+    });
+}).addTo(mymap);
+
+// Clear the search marker when the input is changed
+document.getElementById("custom-search-input").addEventListener("input", function () {
+    clearSearchMarker();
+}).addTo(mymap);
+
+// Clear the search marker when the map is clicked
+mymap.on("click", function () {
+    clearSearchMarker();
 }).addTo(mymap);
 
 
 
+
+// Function to handle search
+function performSearch() {
+    // Get the search query from the input field
+    var query = document.getElementById("custom-search-input").value.toLowerCase();
+    var matchingCount = 0; // Initialize the count of matching features
+
+    // Remove any previously added search markers
+    if (searchMarker) {
+        mymap.removeLayer(searchMarker);
+    }
+
+    // Iterate through GeoJSON features
+    points.eachLayer(function (layer) {
+        // Check if any of the desired properties contain the query
+        if (
+            query === "" || // Show all features when the query is empty
+            layer.feature.properties.palace_name.toLowerCase().includes(query) ||
+            layer.feature.properties.jades.toLowerCase().includes(query) ||
+            layer.feature.properties.宮殿名稱.toLowerCase().includes(query)
+        ) {
+            // Show the matching feature
+            layer.addTo(mymap);
+            matchingCount++;
+        } else {
+            // Hide non-matching features
+            if (mymap.hasLayer(layer)) {
+                mymap.removeLayer(layer);
+            }
+        }
+    });
+
+    // Update and display the hit count
+    updateHitCount(matchingCount);
+
+    // Add a marker at the location of the last search result
+    if (matchingCount > 0) {
+        var latlng = layer.getLatLng(); // Get the latlng from the last matching feature
+        searchMarker = L.marker(latlng).addTo(mymap);
+    }
+}
 
 
 </script>
