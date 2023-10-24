@@ -163,6 +163,7 @@ var points = L.geoJSON(markers, {
     onEachFeature:createPopup
 }).addTo(mymap);
 
+
 // Create a variable to store the marker for the search result
 var searchMarker = null;
 
@@ -177,6 +178,9 @@ document.getElementById("search-button").addEventListener("click", function () {
     // Get the search query from the input field
     var query = document.getElementById("custom-search-input").value.toLowerCase();
     
+    // Clear the previous search marker
+    clearSearchMarker();
+
     // Iterate through GeoJSON features
     points.eachLayer(function (layer) {
         // Check if any of the desired properties contain the query
@@ -189,25 +193,23 @@ document.getElementById("search-button").addEventListener("click", function () {
             // Show the matching feature
             layer.addTo(mymap);
 
-            // Add a marker at the location of the search result
-            var latlng = layer.getLatLng();
-            searchMarker = L.marker(latlng).addTo(mymap);
         } else {
             // Hide non-matching features
             mymap.removeLayer(layer);
         }
     });
-}).addTo(mymap);
+});
+
 
 // Clear the search marker when the input is changed
 document.getElementById("custom-search-input").addEventListener("input", function () {
     clearSearchMarker();
-}).addTo(mymap);
+});
 
 // Clear the search marker when the map is clicked
 mymap.on("click", function () {
     clearSearchMarker();
-}).addTo(mymap);
+});
 
 
 
