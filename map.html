@@ -71,6 +71,7 @@
 }
 </style>
 
+
 </head>
 <body>
 
@@ -86,7 +87,7 @@
     </div>
 </div>
 
-
+<script src="https://unpkg.com/leaflet-search@2.9.5/dist/leaflet-search.min.js"></script>
 
 <!-- Insert a JavaScript snippet and create a map -->
 <script>
@@ -98,25 +99,23 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(mymap); 
 
-// Create Pop-up before calling function for points
+
 function createPopup(feature, layer) {
     var jadeInventory = feature.properties["jades"];
-    var jadeList = jadeInventory.split(','); 
+
+    // Replace all ')' characters with '"></li><li>' to create list items
+        var modifiedJadeInventory = jadeInventory.replace(/\)/g, '"></li><li>');
+
     var popup_text = 
         "<b>Palace Name: </b>" + feature.properties["palace_name"] + "<br>" +
         "<b>宮殿名稱: </b>" + feature.properties["宮殿名稱"] + "<br>" +
         "<b>Pinyin: </b>" + feature.properties["pinyin"] + "<br>" +
         "<b>Object Count: </b>" + feature.properties["object_cnt"] + "<br>" +
-        "<b>Jade Inventory: </b><ul>";
-
-    for (var i = 0; i < jadeList.length; i++) {
-        popup_text += "<li>" + jadeList[i] + "</li>";
-    }
-
-    popup_text += "</ul>";
+        "<b>Jade Inventory: </b><ul><li>" + modifiedJadeInventory + "</li></ul>";
 
     layer.bindPopup(popup_text);
 }
+
 
 // Color Ramp attributes
 function getColor(d) {
@@ -149,6 +148,7 @@ legend.onAdd = function (map) {
 
 legend.addTo(mymap);
 
+
 // Create the Point Layer, bringing in the GeoJSON markers
 var points = L.geoJSON(markers, {
     pointToLayer: function (feature, latlng) {
@@ -163,23 +163,15 @@ var points = L.geoJSON(markers, {
     onEachFeature:createPopup
 }).addTo(mymap);
 
-
-// Create a variable to store the marker for the search result
-var searchMarker = null;
-
-// Function to clear the previous search marker
-function clearSearchMarker() {
-    if (searchMarker) {
-        mymap.removeLayer(searchMarker);
-    }
-}
-
 document.getElementById("search-button").addEventListener("click", function () {
     // Get the search query from the input field
     var query = document.getElementById("custom-search-input").value.toLowerCase();
     
-    // Clear the previous search marker
+   // Clear the search marker when the input is changed
+document.getElementById("custom-search-input").addEventListener("input", function () {
     clearSearchMarker();
+});
+
 
     // Iterate through GeoJSON features
     points.eachLayer(function (layer) {
@@ -193,67 +185,15 @@ document.getElementById("search-button").addEventListener("click", function () {
             // Show the matching feature
             layer.addTo(mymap);
 
+            // Add a marker at the location of the search result
+            var latlng = layer.getLatLng();
+            searchMarker = L.marker(latlng).addTo(mymap);
         } else {
             // Hide non-matching features
             mymap.removeLayer(layer);
         }
     });
-});
-
-
-// Clear the search marker when the input is changed
-document.getElementById("custom-search-input").addEventListener("input", function () {
-    clearSearchMarker();
-});
-
-// Clear the search marker when the map is clicked
-mymap.on("click", function () {
-    clearSearchMarker();
-});
-
-
-
-
-// Function to handle search
-function performSearch() {
-    // Get the search query from the input field
-    var query = document.getElementById("custom-search-input").value.toLowerCase();
-    var matchingCount = 0; // Initialize the count of matching features
-
-    // Remove any previously added search markers
-    if (searchMarker) {
-        mymap.removeLayer(searchMarker);
-    }
-
-    // Iterate through GeoJSON features
-    points.eachLayer(function (layer) {
-        // Check if any of the desired properties contain the query
-        if (
-            query === "" || // Show all features when the query is empty
-            layer.feature.properties.palace_name.toLowerCase().includes(query) ||
-            layer.feature.properties.jades.toLowerCase().includes(query) ||
-            layer.feature.properties.宮殿名稱.toLowerCase().includes(query)
-        ) {
-            // Show the matching feature
-            layer.addTo(mymap);
-            matchingCount++;
-        } else {
-            // Hide non-matching features
-            if (mymap.hasLayer(layer)) {
-                mymap.removeLayer(layer);
-            }
-        }
-    });
-
-    // Update and display the hit count
-    updateHitCount(matchingCount);
-
-    // Add a marker at the location of the last search result
-    if (matchingCount > 0) {
-        var latlng = layer.getLatLng(); // Get the latlng from the last matching feature
-        searchMarker = L.marker(latlng).addTo(mymap);
-    }
-}
+})
 
 
 </script>
