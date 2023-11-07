@@ -16,7 +16,7 @@
 <!-- Load GeoJSON File -->
 
 <script src="fc_map_data.js"></script>
-<script src="poly_buildings.js"></script>
+<script src="polygons.js"></script>
 
 <!-- Add a CSS snippet to set the dimensions of the map area -->
 <style>
@@ -174,6 +174,20 @@ var points = L.geoJSON(markers, {
 
 // Add polygon layer
 L.geoJSON(buildings).addTo(mymap);
+
+L.geoJSON(buildings, {
+  style: function(feature) {
+    // Call the getColor function with the desired property of your feature
+    var d = feature.properties.jades; // Replace 'yourProperty' with the actual property name you want to use
+    return {
+      fillColor: getColor(d),
+      weight: 1, // Border width
+      opacity: 1, // Border opacity
+      color: 'black', // Border color
+      fillOpacity: 0.7 // Fill opacity
+    };
+  }
+}).addTo(mymap);
 
 document.getElementById("search-button").addEventListener("click", function () {
     // Get the search query from the input field
