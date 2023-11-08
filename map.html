@@ -169,7 +169,11 @@ buildingsLayer.eachLayer(function (layer) {
 
 document.getElementById("search-button").addEventListener("click", function () {
     // Get the search query from the input field
-    var query = document.getElementById("custom-search-input").value.toLowerCase();
+    var inputField = document.getElementById("custom-search-input");
+var query = inputField ? inputField.value.toLowerCase() : '';
+
+// Rest of your search functionality
+
     
    // Clear the search marker when the input is changed
 document.getElementById("custom-search-input").addEventListener("input", function () {
@@ -182,22 +186,28 @@ buildingsLayer.eachLayer(function (layer) {
     // Check if any of the desired properties contain the query
     if (
         query === "" || // Show all features when the query is empty
-        layer.feature.properties.building_name.toLowerCase().includes(query) ||
-        layer.feature.properties.宮殿名稱.toLowerCase().includes(query)
+        layer.feature.properties.palace_en.toLowerCase().includes(query) ||
+        layer.feature.properties.palace_zh.toLowerCase().includes(query) ||
+        layer.feature.properties.pinyin.toLowerCase().includes(query)
             ) {
              // Show the matching feature
                 layer.addTo(mymap);
 
             // Add a marker at the location of the search result
-                var latlng = layer.getBounds().getCenter();
-                searchMarker = L.marker(latlng).addTo(mymap);
-                    } else {
-                    // Hide non-matching features
-                    mymap.removeLayer(layer);
-                }
-            });
-        });
+            var latlng = layer.getBounds().getCenter();
+            searchMarker = L.marker(latlng).addTo(mymap);
+        } else {
+            // Hide non-matching features
+            mymap.removeLayer(layer);
+        }
+    });
+});
 
+function clearSearchMarker() {
+    if (searchMarker) {
+        mymap.removeLayer(searchMarker);
+    }
+}
 
 </script>
 </body>
