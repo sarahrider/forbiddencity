@@ -13,6 +13,7 @@
      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
      crossorigin=""></script>
 
+<script src="https://unpkg.com/leaflet-image/leaflet-image.js"></script>
 <!-- Load GeoJSON File -->
 
 <!-- <script src="fc_map_data.js"></script> -->
@@ -77,6 +78,25 @@
   font-size: 13px;
 }
 
+.coordinates-control {
+    font-size: 14px;
+}
+
+.coordinates-background {
+    background-color: white;
+    padding: 5px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    margin-bottom: 5px;
+}
+.coordinates-value-background {
+    background-color: white;
+    padding: 5px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    margin-top: 5px;
+}
+
 </style>
 
 
@@ -104,6 +124,41 @@
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(mymap); 
+
+
+// Define the coordinates for the four corners of the image overlay
+var topLeft = [39.920878, 116.386210];
+var topRight = [39.921187, 116.394964];
+var bottomLeft = [39.912230, 116.386612];
+var bottomRight = [39.912534, 116.395399];
+
+// Combine the coordinates into a bounds array
+var bounds = [topLeft, topRight, bottomLeft, bottomRight];
+
+// Add your georeferenced image using L.imageOverlay
+var imageUrl = 'fcmap_historical.jpg';
+L.imageOverlay(imageUrl, bounds).addTo(mymap);
+
+// Add a control to display coordinates in the lower left corner
+var coordinatesControl = L.control({ position: 'bottomleft' });
+
+coordinatesControl.onAdd = function (map) {
+    this._div = L.DomUtil.create('div', 'coordinates-control');
+    this.update();
+    return this._div;
+};
+
+coordinatesControl.update = function (latlng) {
+    this._div.innerHTML = '<div class="coordinates-background"><b>Coordinates:</b></div>' +
+        (latlng ? '<div class="coordinates-value-background">' + latlng.lat.toFixed(6) + ', ' + latlng.lng.toFixed(6) + '</div>' : '');
+};
+
+coordinatesControl.addTo(mymap);
+
+// Event listener for mousemove to update coordinates in the control
+mymap.on('mousemove', function (e) {
+    coordinatesControl.update(e.latlng);
+});
 
 // Color Ramp attributes
 function getColor(d) {
@@ -208,6 +263,7 @@ function clearSearchMarker() {
         mymap.removeLayer(searchMarker);
     }
 }
+
 
 </script>
 </body>
