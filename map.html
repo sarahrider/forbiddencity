@@ -126,18 +126,18 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(mymap); 
 
 
-// Define the coordinates for the four corners of the image overlay
-var topLeft = [39.920878, 116.386210];
-var topRight = [39.921187, 116.394964];
-var bottomLeft = [39.912230, 116.386612];
-var bottomRight = [39.912534, 116.395399];
+
+// var topLeft = [39.920878, 116.386210];
+// var topRight = [39.921187, 116.394964];
+// var bottomLeft = [39.912230, 116.386612];
+// var bottomRight = [39.912534, 116.395399];
 
 // Combine the coordinates into a bounds array
-var bounds = [topLeft, topRight, bottomLeft, bottomRight];
+// var bounds = [topLeft, topRight, bottomLeft, bottomRight];
 
 // Add your georeferenced image using L.imageOverlay
-var imageUrl = 'fcmap_historical.jpg';
-L.imageOverlay(imageUrl, bounds).addTo(mymap);
+// var imageUrl = 'fcmap_historical.jpg';
+// L.imageOverlay(imageUrl, bounds).addTo(mymap);
 
 // Add a control to display coordinates in the lower left corner
 var coordinatesControl = L.control({ position: 'bottomleft' });
